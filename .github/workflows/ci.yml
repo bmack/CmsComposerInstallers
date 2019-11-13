@@ -34,6 +34,6 @@ jobs:
           php{{ matrix.php }} composer install
           exit $RESULT
       - name: Running PHP lint
-	uses: docker://php:{{ matrix.php }}
+        uses: docker://php:{{ matrix.php }}
         run: |
           find . -name \*.php -exec php{{ matrix.php }} -l {} >/dev/null \;
