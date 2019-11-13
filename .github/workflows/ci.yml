@@ -10,16 +10,30 @@ jobs:
       max-parallel: 6
       fail-fast: false
       matrix:
-        php: ['7.0', '7.1', '7.2', '7.3', '7.4']
+        php: ['7.0', '7.1', '7.2', '7.3', '7.4-rc']
     steps:
+      # Check out the repository
       - uses: actions/checkout@v1
-      - name: Use specified PHP Version
-        run: |
-          sudo update-alternatives --set php /usr/bin/php${{ matrix.php }}
-          php -v
       - name: Install composer dependencies
+	uses: docker://php:{{ matrix.php }}
         run: |
-          composer install
+          EXPECTED_SIGNATURE="$(wget -q -O - https://composer.github.io/installer.sig)"
+          php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+          ACTUAL_SIGNATURE="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+          
+          if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]
+          then
+              >&2 echo 'ERROR: Invalid installer signature'
+              rm composer-setup.php
+              exit 1
+          fi
+          
+          php composer-setup.php --quiet
+          RESULT=$?
+          rm composer-setup.php
+          php{{ matrix.php }} composer install
+          exit $RESULT
       - name: Running PHP lint
+	uses: docker://php:{{ matrix.php }}
         run: |
-          find . -name \*.php -exec php -l {} >/dev/null \;
+          find . -name \*.php -exec php{{ matrix.php }} -l {} >/dev/null \;
