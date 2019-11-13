@@ -15,7 +15,7 @@ jobs:
       # Check out the repository
       - uses: actions/checkout@v1
       - name: Install composer dependencies
-	uses: docker://php:{{ matrix.php }}
+        uses: docker://php:{{ matrix.php }}
         run: |
           EXPECTED_SIGNATURE="$(wget -q -O - https://composer.github.io/installer.sig)"
           php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
