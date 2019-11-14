@@ -22,4 +22,4 @@ jobs:
         run: composer install
       - name: Run PHP linter
         run: |
-          find . -name \*.php -exec php -l {} >/dev/null \;
+          errors=$(find . -name \*.php ! -path "./vendor/*" -exec php -d display_errors=stderr -l {} 2>&1 >/dev/null \;) && echo "$errors" && test -z "$errors"
